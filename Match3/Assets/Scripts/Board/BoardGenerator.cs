@@ -82,7 +82,7 @@ public class BoardGenerator : MonoBehaviour
     private void SetSpawnedTileProperties(TileController tileController, Vector2 pos)
     {
         tileController.SetBoardControllerReference(_boardController);
-        int specialSpawnChance = GetValidValueInGivenRange(_boardController._chanceToSpawnSpecialObject.Value, 1, 100);
+        int specialSpawnChance = GetValidValueInGivenRange(_boardController.ChanceToSpawnSpecialObject.Value, 1, 100);
         tileController.SetPosition(pos);
         _boardController.AssignNeighbours(tileController);
 
