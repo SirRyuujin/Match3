@@ -21,7 +21,6 @@ public class GemSwapAnimator : MonoBehaviour
             return;
 
         BoardController board = OnGemsSwappedEvent.RecentCaller.GetComponent<BoardController>();
-    //    gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(board.Width, board.Height);
         Image img1 = board.SelectedTiles[0].GetComponent<Image>();
         Image img2 = board.SelectedTiles[1].GetComponent<Image>();
 

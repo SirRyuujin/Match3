@@ -45,7 +45,10 @@ public class TileController : MonoBehaviour
 
     private void RenderGemSprtieOnTile()
     {
-        GemSpriteHolder.sprite = Gem.Sprite;
+        if (Gem != null)
+            GemSpriteHolder.sprite = Gem.Sprite;
+        else
+            GemSpriteHolder.sprite = null;
     }
 
     public Gem GetGemOfRandomType(int chanceForSpecialType)

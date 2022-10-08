@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1988779946493841570
 RectTransform:
   m_ObjectHideFlags: 0
@@ -79,6 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ScoreCounterText: {fileID: 1988779948229269078}
+  OnCollectGamesEvent: {fileID: 11400000, guid: bacb2cc2476f6d4418e2853740b41570, type: 2}
 --- !u!114 &1988779946493841599
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,18 +92,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82c6d590d4b52fe40abb148427e25ec8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: 6f234564dd0e26c4f831f6f876ec075f, type: 2}
+  Event: {fileID: 11400000, guid: bacb2cc2476f6d4418e2853740b41570, type: 2}
   Response:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1988779946493841596}
         m_TargetAssemblyTypeName: ScoreController, Assembly-CSharp
-        m_MethodName: AddPointsToScore
-        m_Mode: 3
+        m_MethodName: UpdateScore
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -139,8 +140,8 @@ RectTransform:
   m_Father: {fileID: 1988779946493841570}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 50}
   m_Pivot: {x: 0, y: 1}
@@ -273,9 +274,9 @@ RectTransform:
   m_Father: {fileID: 1988779946493841570}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 200, y: -25}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1988779948229269073

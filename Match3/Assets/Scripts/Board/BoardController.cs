@@ -15,16 +15,23 @@ public class BoardController : MonoBehaviour
     public IntVariable ChanceToSpawnSpecialObject;
     [SerializeField] private IntVariable _numberOfGemsToMatch;
     [SerializeField] private FloatVariable _clickCooldown;
+    // how many more gems have to be matched in order to get bonus points
+    [SerializeField] private IntVariable _multiplierThreshold;
 
-    [Header("Preview")]
-    public List<TileController> Match = new List<TileController>();
+    [Space(10)]
+    public List<TileController> Matches = new List<TileController>();
     public TileController[,] Tiles;
     public List<TileController> SelectedTiles = new List<TileController>();
     [HideInInspector] public int Rows { get; private set; }
     [HideInInspector] public int Columns { get; private set; }
     private bool _canSelectGem = true;
     private float _clickCooldownTimer = 0;
+    public int Score { get; private set; }
 
+    private void Awake()
+    {
+        Score = 0;
+    }
 
     /// <summary>
     ///  Checks last drawn's tile neighbours. Preventing from a match.
@@ -64,14 +71,14 @@ public class BoardController : MonoBehaviour
             else
             {
                 count++;
-                Match.Add(tile);
+                Matches.Add(tile);
                 return CheckNeighbours(tile, ref count, addNodes);
             }
         }
         else
         {
             if (addNodes)
-                Match.Add(tile);
+                Matches.Add(tile);
             count++;
             return CheckNeighbours(tile, ref count, addNodes);
         }
@@ -159,41 +166,91 @@ public class BoardController : MonoBehaviour
 
     private void TrySwapGemsOnSelectedTiles()
     {
-        // swap
+        bool flag = false;
+
         Gem temp = SelectedTiles[0].Gem;
         SelectedTiles[0].AssignGem(SelectedTiles[1].Gem);
         SelectedTiles[1].AssignGem(temp);
 
-        // reassign neighbours
-        AssignNeighbours(SelectedTiles[0], true);
-        AssignNeighbours(SelectedTiles[1], true);
+ //       AssignNeighbours(SelectedTiles[0], true);
+  //      AssignNeighbours(SelectedTiles[1], true);
 
-        if (MatchTiles(SelectedTiles[1]))
+        flag = TryMatch();
+        if (!flag)
+            ReverseSwap();
+
+        // drop tiles
+        // create new tiles
+
+        UpdateNeighboursForEveryTile();
+    }
+
+    private bool TryMatch()
+    {
+        bool flag = IsMatch(SelectedTiles[0]);
+        if (flag)
         {
-            // actually match
-            
-            // raise an event
-            OnGemSwapEvent.Raise(gameObject);
+            StartCoroutine(MatchCoroutine());
 
+            bool tmp = IsMatch(SelectedTiles[1]);
+            if (tmp)
+                StartCoroutine(MatchCoroutine());
         }
-        if (MatchTiles(SelectedTiles[0]))
+        else
         {
-            // same
+            flag = IsMatch(SelectedTiles[1]);
+            if (flag)
+                StartCoroutine(MatchCoroutine());
         }
+        
+        return flag;
+    }
 
-        // if there's no match
-        // (check connected tiles, count amount, make a list of objects)
-        // return
+    private void ReverseSwap()
+    {
 
     }
 
-    private bool MatchTiles(TileController tile)
+    private void DropTiles()
     {
-        Match.Clear();
-        Match.Add(tile);
+
+    }
+
+    private IEnumerator MatchCoroutine()
+    {
+        OnGemSwapEvent.Raise(gameObject);
+        StartCoroutine(AnimationSwapSyncCoroutine());
+        yield return null;
+    }
+
+    private IEnumerator AnimationSwapSyncCoroutine()
+    {
+        yield return new WaitForSeconds(_clickCooldownTimer / 2);
+        Score += CalculatePoints();
+        DeleteGems();
+        UpdateNeighboursForEveryTile();
+    }
+
+    private void DeleteGems()
+    {
+        for (int i = 0; i < Matches.Count; i++)
+            Matches[i].AssignGem(null);
+    }
+
+    private int CalculatePoints()
+    {
+        return (Matches.Count >= _multiplierThreshold.Value) ?
+            (int)(Matches[0].Gem.BaseValue * Matches[0].Gem.Multiplier) :
+            Matches[0].Gem.BaseValue;
+    }
+
+    private bool IsMatch(TileController tile)
+    {
+        Matches.Clear();
+        Matches.Add(tile);
         LookForConnectedNodes(tile);
 
-        return Match.Count >= _numberOfGemsToMatch.Value;
+        return Matches.Count >= _numberOfGemsToMatch.Value;
     }
 
     private void LookForConnectedNodes(TileController tile)
@@ -217,10 +274,10 @@ public class BoardController : MonoBehaviour
         if (tile.Gem.ID != ID)
             return false;
 
-        if (Match.Contains(tile))
+        if (Matches.Contains(tile))
             return false;
 
-        Match.Add(tile);
+        Matches.Add(tile);
         return true;
     }
 

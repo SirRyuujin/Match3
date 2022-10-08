@@ -93,6 +93,8 @@ MonoBehaviour:
   ChanceToSpawnSpecialObject: {fileID: 11400000, guid: 37f4da9bf5a8d854ba1d8fa6dbb1eed3, type: 2}
   _numberOfGemsToMatch: {fileID: 11400000, guid: cf7b3a59ec16f2a448f8a5a2eeb2d700, type: 2}
   _clickCooldown: {fileID: 11400000, guid: 7ba499754d2b0524b944df8b05db7f10, type: 2}
+  _multiplierThreshold: {fileID: 11400000, guid: 72c868318148d7b4e9ff6a119138679e, type: 2}
+  Matches: []
   SelectedTiles: []
 --- !u!114 &6743207611289373858
 MonoBehaviour:
