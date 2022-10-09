@@ -17,8 +17,8 @@ public class TileController : MonoBehaviour
 
     [Header("Preview")]
     public TileController[] Neighbours = new TileController[4];
-    [SerializeField] private int x;
-    [SerializeField] private int y; 
+    [SerializeField] private int _column;
+    [SerializeField] private int _row; 
 
     private BoardController _boardController;
 
@@ -34,7 +34,7 @@ public class TileController : MonoBehaviour
 
     public Vector2Int GetBoardPosition()
     {
-        return new Vector2Int(x, y);
+        return new Vector2Int(_column, _row);
     }
 
     public void AssignGem(Gem gem)
@@ -83,8 +83,8 @@ public class TileController : MonoBehaviour
     public void SetPosition(Vector2 position)
     {
         //_position = position;
-        x = (int)position.x;
-        y = (int)position.y;
+        _column = (int)position.x;
+        _row = (int)position.y;
     }
 
     public void SetRandomSprite()

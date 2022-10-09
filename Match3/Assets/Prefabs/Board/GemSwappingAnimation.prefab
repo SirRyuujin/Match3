@@ -161,6 +161,7 @@ GameObject:
   - component: {fileID: 7429107898197946367}
   - component: {fileID: 7429107898197946337}
   - component: {fileID: 7429107898197946366}
+  - component: {fileID: 1077104052}
   m_Layer: 5
   m_Name: GemSwappingAnimation
   m_TagString: Untagged
@@ -202,12 +203,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   OnGemsSwappedEvent: {fileID: 11400000, guid: bacb2cc2476f6d4418e2853740b41570, type: 2}
+  OnFailedSwapEvent: {fileID: 11400000, guid: e26ef1480edd0d4439fdadc67c19ea11, type: 2}
   SwapAnimationSpeed: {fileID: 11400000, guid: 7ba499754d2b0524b944df8b05db7f10, type: 2}
   SelectedGemScale: {fileID: 11400000, guid: 682f7ced9ce17844d8d906f443f52969, type: 2}
-  _gem1: {fileID: 7429107897839651643}
-  _gem2: {fileID: 7429107898068127500}
-  _gem1Image: {fileID: 7429107897839651645}
-  _gem2Image: {fileID: 7429107898068127502}
+  _tile1: {fileID: 7429107897839651643}
+  _tile2: {fileID: 7429107898068127500}
+  _tile1Img: {fileID: 7429107897839651645}
+  _tile2Img: {fileID: 7429107898068127502}
 --- !u!114 &7429107898197946366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,6 +229,34 @@ MonoBehaviour:
       - m_Target: {fileID: 7429107898197946337}
         m_TargetAssemblyTypeName: GemSwapAnimator, Assembly-CSharp
         m_MethodName: AnimateSwap
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1077104052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7429107898197946364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82c6d590d4b52fe40abb148427e25ec8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: e26ef1480edd0d4439fdadc67c19ea11, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7429107898197946337}
+        m_TargetAssemblyTypeName: GemSwapAnimator, Assembly-CSharp
+        m_MethodName: AnimateFailedSwap
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

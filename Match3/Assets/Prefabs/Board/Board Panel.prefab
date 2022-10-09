@@ -89,6 +89,8 @@ MonoBehaviour:
   OnSelectGemEvent: {fileID: 11400000, guid: 9888d05fd99610e4191909eaa03be05b, type: 2}
   OnDeselectGemEvent: {fileID: 11400000, guid: b7d1fb8f7c2e0a94e900f27a37d139d3, type: 2}
   OnGemSwapEvent: {fileID: 11400000, guid: bacb2cc2476f6d4418e2853740b41570, type: 2}
+  OnEndSwapEvent: {fileID: 11400000, guid: 16eb427db671c0e4880c501f3178f2ff, type: 2}
+  OnFailedSwapEvent: {fileID: 11400000, guid: e26ef1480edd0d4439fdadc67c19ea11, type: 2}
   AllowedMoveDistance: {fileID: 11400000, guid: 0ee67a334951c1e4da7124c6fe7e44dc, type: 2}
   ChanceToSpawnSpecialObject: {fileID: 11400000, guid: 37f4da9bf5a8d854ba1d8fa6dbb1eed3, type: 2}
   _numberOfGemsToMatch: {fileID: 11400000, guid: cf7b3a59ec16f2a448f8a5a2eeb2d700, type: 2}

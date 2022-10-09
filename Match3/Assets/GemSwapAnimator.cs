@@ -8,12 +8,64 @@ public class GemSwapAnimator : MonoBehaviour
 {
     [Header("References")]
     public GameEventSO OnGemsSwappedEvent;
+    public GameEventSO OnFailedSwapEvent;
     [SerializeField] private FloatVariable SwapAnimationSpeed;
     [SerializeField] private FloatVariable SelectedGemScale;
-    [SerializeField] private GameObject _gem1;
-    [SerializeField] private GameObject _gem2;
-    [SerializeField] private Image _gem1Image;
-    [SerializeField] private Image _gem2Image;
+    [SerializeField] private GameObject _tile1;
+    [SerializeField] private GameObject _tile2;
+    [SerializeField] private Image _tile1Img;
+    [SerializeField] private Image _tile2Img;
+
+    public void AnimateFailedSwap()
+    {
+        if (OnFailedSwapEvent.RecentCaller == null)
+            return;
+
+        BoardController board = OnGemsSwappedEvent.RecentCaller.GetComponent<BoardController>();
+        Image img1 = board.SelectedTiles[1].GetComponent<Image>();
+        Image img2 = board.SelectedTiles[0].GetComponent<Image>();
+
+        _tile1Img.sprite = img1.sprite;
+        _tile2Img.sprite = img2.sprite;
+
+        Vector3 g1LPos = board.SelectedTiles[1].GetLocalPosition();
+        Vector3 g2LPos = board.SelectedTiles[0].GetLocalPosition();
+        _tile1.transform.localPosition = g1LPos;
+        _tile2.transform.localPosition = g2LPos;
+
+        _tile1.transform.localScale = new Vector3(SelectedGemScale.Value, SelectedGemScale.Value, 1);
+        _tile2.transform.localScale = new Vector3(SelectedGemScale.Value, SelectedGemScale.Value, 1);
+
+        _tile1Img.enabled = true;
+        _tile2Img.enabled = true;
+
+        TileShakeSequence(_tile1);
+        TileShakeSequence(_tile2);
+
+        BlinkRedSequence(_tile1Img);
+        BlinkRedSequence(_tile2Img);
+    }
+
+    private void TileShakeSequence(GameObject tile)
+    {
+        Sequence tileShake = DOTween.Sequence();
+        tileShake.Append(tile.transform.DORotate(new Vector3(0, 0, -45), 0.2f));
+        tileShake.Append(tile.transform.DORotate(new Vector3(0, 0, 45), 0.2f));
+        tileShake.Append(tile.transform.DORotate(new Vector3(0, 0, 0), 0.1f));
+
+        tileShake.Play();
+    }
+
+    private void BlinkRedSequence(Image tileImg)
+    {
+        Sequence tileBlink = DOTween.Sequence();
+        tileBlink.Append(tileImg.DOColor(new Color(1, 0, 0), 0));
+        tileBlink.AppendInterval(.4f);
+        tileBlink.Append(tileImg.DOColor(new Color(1, 1, 1), .2f));
+        tileBlink.OnComplete(() => ToogleImage(tileImg));
+
+        tileBlink.Play();
+    }
 
     public void AnimateSwap()
     {
@@ -21,34 +73,34 @@ public class GemSwapAnimator : MonoBehaviour
             return;
 
         BoardController board = OnGemsSwappedEvent.RecentCaller.GetComponent<BoardController>();
-        Image img1 = board.SelectedTiles[0].GetComponent<Image>();
-        Image img2 = board.SelectedTiles[1].GetComponent<Image>();
+        Image img1 = board.SelectedTiles[1].GetComponent<Image>();
+        Image img2 = board.SelectedTiles[0].GetComponent<Image>();
 
-        _gem1Image.sprite = board.SelectedTiles[1].Gem.Sprite;
-        _gem2Image.sprite = board.SelectedTiles[0].Gem.Sprite;
+        _tile1Img.sprite = img1.sprite;
+        _tile2Img.sprite = img2.sprite;
 
         Vector3 g1LPos = board.SelectedTiles[0].GetLocalPosition();
         Vector3 g2LPos = board.SelectedTiles[1].GetLocalPosition();
 
-        _gem1.transform.localPosition = g2LPos;
-        _gem2.transform.localPosition = g1LPos;
+        _tile1.transform.localPosition = g1LPos;
+        _tile2.transform.localPosition = g2LPos;
 
-        _gem1.transform.localScale = new Vector3(SelectedGemScale.Value, SelectedGemScale.Value, 1);
-        _gem2.transform.localScale = new Vector3(SelectedGemScale.Value, SelectedGemScale.Value, 1);
+        _tile1.transform.localScale = new Vector3(SelectedGemScale.Value, SelectedGemScale.Value, 1);
+        _tile2.transform.localScale = new Vector3(SelectedGemScale.Value, SelectedGemScale.Value, 1);
 
-        _gem1Image.enabled = true;
-        _gem2Image.enabled = true;
+        _tile1Img.enabled = true;
+        _tile2Img.enabled = true;
 
 
         img1.enabled = false;
         img2.enabled = false;
 
 
-        _gem1.transform.DOLocalMove(g1LPos, SwapAnimationSpeed.Value).OnComplete(() => ToogleImage(_gem1Image));
-        _gem2.transform.DOLocalMove(g2LPos, SwapAnimationSpeed.Value).OnComplete(() => EndSequence(_gem2Image, img1, img2, board));
+        _tile1.transform.DOLocalMove(g2LPos, SwapAnimationSpeed.Value).OnComplete(() => ToogleImage(_tile1Img));
+        _tile2.transform.DOLocalMove(g1LPos, SwapAnimationSpeed.Value).OnComplete(() => EndSwapSequence(_tile2Img, img1, img2));
     }
 
-    private void EndSequence(Image fakeImage, Image img1, Image img2, BoardController board)
+    private void EndSwapSequence(Image fakeImage, Image img1, Image img2)
     {
         ToogleImage(fakeImage);
         img1.enabled = true;

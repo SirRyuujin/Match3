@@ -11,6 +11,7 @@ public class GemClickAnimation : MonoBehaviour
     public GameEventSO OnDeselectGemEvent;
     public FloatVariable SelectedGemScale;
     public FloatVariable SelectedGemAnimationDuration;
+    public float[] SelectColor = new float[3];
 
     public void AnimateSelect()
     {
@@ -18,6 +19,8 @@ public class GemClickAnimation : MonoBehaviour
             return;
 
         GameObject obj = OnSelectGemEvent.RecentCaller;
+        Color color = new Color(SelectColor[0], SelectColor[1], SelectColor[2]);
+        obj.GetComponent<Image>().DOColor(color, SelectedGemAnimationDuration.Value/2); 
         obj.transform.DOScale(new Vector3(SelectedGemScale.Value, SelectedGemScale.Value, 1), SelectedGemAnimationDuration.Value);
     }
 
@@ -27,6 +30,7 @@ public class GemClickAnimation : MonoBehaviour
             return;
 
         GameObject obj = OnDeselectGemEvent.RecentCaller;
+        obj.GetComponent<Image>().DOColor(new Color(1, 1, 1), SelectedGemAnimationDuration.Value / 2);
         obj.transform.DOScale(new Vector3(1, 1, 1), SelectedGemAnimationDuration.Value);
     }
 }
