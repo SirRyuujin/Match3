@@ -16,4 +16,4 @@ MonoBehaviour:
   Type: {fileID: 11400000, guid: d91d6561c46bfa648aa565e2ee974493, type: 2}
   Sprite: {fileID: 21300000, guid: 08d1689a862b25b4ca79d22c170e0213, type: 3}
   BaseValue: 10
-  Multiplier: 1.5
+  Multiplier: 2

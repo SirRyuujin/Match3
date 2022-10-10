@@ -7,14 +7,14 @@ using TMPro;
 public class ScoreController : MonoBehaviour
 {
     public TextMeshProUGUI ScoreCounterText;
-    public GameEventSO OnCollectGamesEvent;
+    public GameEventSO OnAddPoints;
 
     public void UpdateScore()
     {
-        if (OnCollectGamesEvent.RecentCaller == null)
+        if (OnAddPoints.RecentCaller == null)
             return;
 
-        GameObject go = OnCollectGamesEvent.RecentCaller;
+        GameObject go = OnAddPoints.RecentCaller;
         BoardController boardController = go.GetComponent<BoardController>(); ;
 
         ScoreCounterText.text = boardController.Score.ToString();

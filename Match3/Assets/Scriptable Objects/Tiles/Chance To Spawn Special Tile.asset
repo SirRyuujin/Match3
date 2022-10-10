@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 348323a3ab4801f4db5f8b18abe66b37, type: 3}
   m_Name: Chance To Spawn Special Tile
   m_EditorClassIdentifier: 
-  Value: 2
+  Value: 3

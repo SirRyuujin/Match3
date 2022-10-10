@@ -79,7 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ScoreCounterText: {fileID: 1988779948229269078}
-  OnCollectGamesEvent: {fileID: 11400000, guid: bacb2cc2476f6d4418e2853740b41570, type: 2}
+  OnAddPoints: {fileID: 11400000, guid: 7481b4cd5c343194d9ad5902e0189f51, type: 2}
 --- !u!114 &1988779946493841599
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -92,7 +92,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82c6d590d4b52fe40abb148427e25ec8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Event: {fileID: 11400000, guid: bacb2cc2476f6d4418e2853740b41570, type: 2}
+  Event: {fileID: 11400000, guid: 7481b4cd5c343194d9ad5902e0189f51, type: 2}
   Response:
     m_PersistentCalls:
       m_Calls:

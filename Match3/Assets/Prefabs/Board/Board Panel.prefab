@@ -91,12 +91,19 @@ MonoBehaviour:
   OnGemSwapEvent: {fileID: 11400000, guid: bacb2cc2476f6d4418e2853740b41570, type: 2}
   OnEndSwapEvent: {fileID: 11400000, guid: 16eb427db671c0e4880c501f3178f2ff, type: 2}
   OnFailedSwapEvent: {fileID: 11400000, guid: e26ef1480edd0d4439fdadc67c19ea11, type: 2}
+  OnMatchGemsEvent: {fileID: 11400000, guid: a4c99c6b00d0de14b8ec0578b89a2cf7, type: 2}
+  OnAddPoints: {fileID: 11400000, guid: 7481b4cd5c343194d9ad5902e0189f51, type: 2}
+  OnDetonateBombEvent: {fileID: 11400000, guid: d83fc147758a572498d8e56ecd99b4de, type: 2}
+  OnColorMatchEvent: {fileID: 11400000, guid: d8877cc01637f114c8945af46dc6e9a8, type: 2}
   AllowedMoveDistance: {fileID: 11400000, guid: 0ee67a334951c1e4da7124c6fe7e44dc, type: 2}
   ChanceToSpawnSpecialObject: {fileID: 11400000, guid: 37f4da9bf5a8d854ba1d8fa6dbb1eed3, type: 2}
+  WrongMovePoints: {fileID: 11400000, guid: a6ec40a926451ee44ad187641c1fdd34, type: 2}
   _numberOfGemsToMatch: {fileID: 11400000, guid: cf7b3a59ec16f2a448f8a5a2eeb2d700, type: 2}
   _clickCooldown: {fileID: 11400000, guid: 7ba499754d2b0524b944df8b05db7f10, type: 2}
   _multiplierThreshold: {fileID: 11400000, guid: 72c868318148d7b4e9ff6a119138679e, type: 2}
-  Matches: []
+  SpecialGemMatchTile: {fileID: 0}
+  ComboMatches: []
+  CurrentMatch: []
   SelectedTiles: []
 --- !u!114 &6743207611289373858
 MonoBehaviour:

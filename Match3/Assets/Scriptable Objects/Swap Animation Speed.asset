@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 300d4f00d02038a43a8c1cea8ba05299, type: 3}
   m_Name: Swap Animation Speed
   m_EditorClassIdentifier: 
-  Value: 1
+  Value: 0.7

@@ -3,26 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-// Refactor recursion
+// Refactor recursion (in compliance with DRY)
+// Add drop anim
+
 public class BoardController : MonoBehaviour
 {
-    [Header("References")]
+    [Header("Events")]
     public GameEventSO OnTrySelectGemEvent;
     public GameEventSO OnSelectGemEvent;
     public GameEventSO OnDeselectGemEvent;
     public GameEventSO OnGemSwapEvent;
     public GameEventSO OnEndSwapEvent;
     public GameEventSO OnFailedSwapEvent;
+    public GameEventSO OnMatchGemsEvent;
+    public GameEventSO OnAddPoints;
+    public GameEventSO OnDetonateBombEvent;
+    public GameEventSO OnColorMatchEvent;
+    [Header("References")]
     public IntVariable AllowedMoveDistance;
     public IntVariable ChanceToSpawnSpecialObject;
+    public IntVariable WrongMovePoints;
     [SerializeField] private IntVariable _numberOfGemsToMatch;
     [SerializeField] private FloatVariable _clickCooldown;
-    // how many more gems have to be matched in order to get bonus points
-    [SerializeField] private IntVariable _multiplierThreshold;
+    [SerializeField] private IntVariable _multiplierThreshold; // How many more gems have to be matched in order to get bonus points
 
-    [Space(10)]
-    public List<TileController> Matches = new List<TileController>();
-    public List<TileController> ComboMatches = new List<TileController>(); // Holds info about all matched tiles in last move.
+    [Space(15)]
+    [Header("Preview")]
+    public TileController SpecialGemMatchTile;
+    public List<TileController> ComboMatches = new List<TileController>(); // All matched tiles in the last move.
+    public List<TileController> CurrentMatch = new List<TileController>();
     public TileController[,] Tiles;
     public List<TileController> SelectedTiles = new List<TileController>();
     [HideInInspector] public int Score { get; private set; }
@@ -42,7 +51,7 @@ public class BoardController : MonoBehaviour
     /// </summary>
     /// <param name="tile"> Last spawned tile to be checked.</param>
     /// <returns> Returns FALSE in case of a potencial match.
-    ///     Return TRUE when there's no match. </returns>
+    ///           Return TRUE when there's no match. </returns>
     public bool IsDrawnGemValid(TileController tile)
     {
         int count = 1;
@@ -61,16 +70,45 @@ public class BoardController : MonoBehaviour
         return (dist <= distance && dist % 1 == 0);
     }
 
+    private void SpawnNewGemsSequence()
+    {
+        int totalBlanks = 0;
+
+        DropTiles(ref totalBlanks);
+
+        Vector2Int[] newTileCords = new Vector2Int[ComboMatches.Count];
+        for (int i = 0; i < ComboMatches.Count; i++)
+            newTileCords[i] = ComboMatches[i].GetBoardPosition();
+        ComboMatches.Clear();
+
+        SpawnNewGems(totalBlanks, newTileCords);
+
+        UpdateNeighboursForEveryTile();
+
+        StartCoroutine(TryMatchNewTiles(newTileCords));
+    }
+
     private bool flag = false;
     private bool flag2 = false;
 
-    private void SpawnNewGems(int amount)
+    #region DROP
+    private void SpawnNewGems(int amount, Vector2Int[] newTileCords)
     {
+        if (amount == 0)
+            return;
+
         List<TileController> blankTiles = GetBlankTiles();
         TileController tile = blankTiles[0];
 
         for (int i = 0; i < blankTiles.Count; i++)
-            blankTiles[i].AssignGem(tile.GetGemOfRandomType(ChanceToSpawnSpecialObject.Value));
+        {
+            Gem drawnGem;
+            do
+            {
+                drawnGem = blankTiles[i].GetGemOfRandomType(ChanceToSpawnSpecialObject.Value);
+                blankTiles[i].AssignGem(drawnGem);
+            } while (!IsDrawnGemValid(blankTiles[i]));
+        }
     }
 
     private void DropTiles(ref int totalBlanks)
@@ -113,7 +151,6 @@ public class BoardController : MonoBehaviour
             blanks = 0;
             lastBlankID = -1;
 
-            // put in method: GetBlankTiles
             for (int j = 0; j < Tiles.GetLength(0); j++) // rows
             {
                 if (Tiles[j, list[i]].Gem == null)
@@ -138,20 +175,9 @@ public class BoardController : MonoBehaviour
             }
         }   
     }
+    #endregion
 
-    private void SpawnNewTilesSequence()
-    {
-        int totalBlanks = 0;
-
-        DropTiles(ref totalBlanks);
-        ComboMatches.Clear();
-        SpawnNewGems(totalBlanks);
-        UpdateNeighboursForEveryTile();
-        // check for new matches
-    }
-
-
-    #region CLICKING
+    #region CLICK
     public void TrySelectTile()
     {
         if (!_canSelectGem)
@@ -184,7 +210,6 @@ public class BoardController : MonoBehaviour
                 TrySwapGemsOnSelectedTiles();
                 return;
             }
-            else; // visually notify that you cannot pick that
 
             TryDeselectBothSelectedTiles();
         }
@@ -227,17 +252,34 @@ public class BoardController : MonoBehaviour
     }
     #endregion
 
-    #region SWAPPING/MATCHING
+    #region SWAP/MATCH
+    private IEnumerator TryMatchNewTiles(Vector2Int[] cords)
+    {
+        for (int i = 0; i < Tiles.GetLength(0); i++)
+        {
+            for (int j = 0; j < Tiles.GetLength(1); j++)
+            {
+                IsMatch(Tiles[i, j]);
+            }
+        }
+
+        while (!flag2)
+            yield return null;
+
+        if (ComboMatches.Count > 0)
+        {
+            StartCoroutine(MatchCoroutine());
+            OnMatchGemsEvent.Raise(gameObject);
+            SpawnNewGemsSequence();
+        }
+    }
+
     private void TrySwapGemsOnSelectedTiles()
     {
         SwapGems(SelectedTiles[0], SelectedTiles[1]);
         StartCoroutine(TryMatch());
     }
 
-    /// Refactor
-    // Check both selectd games for matches (hold in ComboMatches list)
-    // Release'em both at the same time
-    // ^gets rid of the delay + fixes scroe
     private IEnumerator TryMatch()
     {
         flag = false;
@@ -246,14 +288,9 @@ public class BoardController : MonoBehaviour
         flag = IsMatch(SelectedTiles[0]);
         if (flag)
         {
-            OnGemSwapEvent.Raise(gameObject);
+            IsMatch(SelectedTiles[1]);
             StartCoroutine(MatchCoroutine());
-            while (!flag2)
-                yield return null;
-
-            bool tmp = IsMatch(SelectedTiles[1]);
-            if (tmp)
-                StartCoroutine(MatchCoroutine());
+            OnGemSwapEvent.Raise(gameObject);
         }
         else
         {
@@ -268,26 +305,31 @@ public class BoardController : MonoBehaviour
         while (!flag2)
             yield return null;
 
-        if (!flag) // Reswap, no matches.
+        if (!flag)
         {
-            SwapGems(SelectedTiles[0], SelectedTiles[1]);
-            OnFailedSwapEvent.Raise(gameObject);
+            Reswap();
         }
         else
         {
             UpdateNeighboursForEveryTile();
             OnEndSwapEvent.Raise(gameObject);
-            SpawnNewTilesSequence();
+            OnMatchGemsEvent.Raise(gameObject);
+            SpawnNewGemsSequence();
         }
 
         TryDeselectBothSelectedTiles();
     }
 
+    private void Reswap()
+    {
+        SwapGems(SelectedTiles[0], SelectedTiles[1]);
+        AddToScore(WrongMovePoints.Value);
+        OnFailedSwapEvent.Raise(gameObject);
+        SpecialGemMatchTile = null;
+    }
+
     private IEnumerator MatchCoroutine()
     {
-        for (int i = 0; i < Matches.Count; i++)
-            ComboMatches.Add(Matches[i]);
-
         flag2 = false;
         StartCoroutine(AnimationSwapSyncCoroutine());
         while (!flag2)
@@ -296,11 +338,103 @@ public class BoardController : MonoBehaviour
 
     private IEnumerator AnimationSwapSyncCoroutine()
     {
+        AccountForSpecialGems();
         yield return new WaitForSeconds(_clickCooldown.Value);
-        Score += CalculatePoints();
+        AddToScore(CalculatePoints());
         DeleteGems();
         UpdateNeighboursForEveryTile();
         flag2 = true;
+    }
+
+    #region PowerUp
+    private void AccountForSpecialGems()
+    {
+        if (SpecialGemMatchTile != null)
+        {
+            if (SpecialGemMatchTile.Gem != null)
+            {
+                switch (SpecialGemMatchTile.Gem.ID)
+                {
+                    case 0: // bomb 3x3
+                        Vector2Int pos = SpecialGemMatchTile.GetBoardPosition();
+                        AddAllAdjacentTillesToComboMatch(pos);
+                        OnDetonateBombEvent.Raise(gameObject);
+                        AddToScore(SpecialGemMatchTile.Gem.BaseValue);
+                        break;
+                    case 1: // same colour
+                        AddGemsOfTheSameIDToComboMatch();
+                        OnColorMatchEvent.Raise(gameObject);
+                        AddToScore(SpecialGemMatchTile.Gem.BaseValue);
+                        break;
+                }
+
+                SpecialGemMatchTile.AssignGem(null);
+                SpecialGemMatchTile = null;
+            }
+        }
+    }
+    #endregion
+
+    private void AddGemsOfTheSameIDToComboMatch()
+    {
+        TileController tile = ComboMatches[0];
+        for (int i = 0; i < Tiles.GetLength(0); i++)
+        {
+            for (int j = 0; j < Tiles.GetLength(1); j++)
+            {
+                TileController current = Tiles[i, j];
+                if (tile.Gem == null)
+                    continue;
+
+                if (current.Gem.Type == tile.Gem.Type)
+                    if (current.Gem.ID == tile.Gem.ID)
+                        if (!ComboMatches.Contains(current))
+                            ComboMatches.Add(current);
+            }
+        }
+    }
+
+    private void AddToScore(int amount)
+    {
+        Score += amount;
+        OnAddPoints.Raise(gameObject);
+    }
+
+    private void AddAllAdjacentTillesToComboMatch(Vector2Int pos)
+    {
+        TileController neighbour;
+
+        neighbour = GetTopNeighbour(pos.x, pos.y);
+        if (neighbour != null && !ComboMatches.Contains(neighbour))
+            ComboMatches.Add(neighbour);
+
+        neighbour = GetBottomNeighbour(pos.x, pos.y);
+        if (neighbour != null && !ComboMatches.Contains(neighbour))
+            ComboMatches.Add(neighbour);
+
+        neighbour = GetRightNeighbour(pos.x, pos.y);
+        if (neighbour != null && !ComboMatches.Contains(neighbour))
+            ComboMatches.Add(neighbour);
+
+        neighbour = GetLeftNeighbour(pos.x, pos.y);
+        if (neighbour != null && !ComboMatches.Contains(neighbour))
+            ComboMatches.Add(neighbour);
+
+        neighbour = GetTopLeftNeighbour(pos.x, pos.y);
+        if (neighbour != null && !ComboMatches.Contains(neighbour))
+            ComboMatches.Add(neighbour);
+
+        neighbour = GetTopRightNeighbour(pos.x, pos.y);
+        if (neighbour != null && !ComboMatches.Contains(neighbour))
+            ComboMatches.Add(neighbour);
+
+        neighbour = GetBottomLeftNeighbour(pos.x, pos.y);
+        if (neighbour != null && !ComboMatches.Contains(neighbour))
+            ComboMatches.Add(neighbour);
+
+        neighbour = GetBottomRightNeighbour(pos.x, pos.y);
+        if (neighbour != null && !ComboMatches.Contains(neighbour))
+            ComboMatches.Add(neighbour);
     }
 
     private void SwapGems(TileController tile1, TileController tile2)
@@ -312,29 +446,72 @@ public class BoardController : MonoBehaviour
 
     private void DeleteGems()
     {
-        for (int i = 0; i < Matches.Count; i++)
+        for (int i = 0; i < ComboMatches.Count; i++)
         {
-            var pos = Matches[i].GetBoardPosition();
+            var pos = ComboMatches[i].GetBoardPosition();
             Tiles[pos.y, pos.x].AssignGem(null);
-            Matches[i].AssignGem(null);
         }
     }
 
     private int CalculatePoints()
     {
-        int count = Matches.Count;
-        return (count >= _multiplierThreshold.Value) ?
-            (int)(Matches[0].Gem.BaseValue * Matches[0].Gem.Multiplier * count) :
-            Matches[0].Gem.BaseValue * count;
+        List<Gem> gems = new List<Gem>();
+        List<int> count = new List<int>();
+
+        int counter = 0;
+        for (int i = 0; i < ComboMatches.Count; i++)
+        {
+            if (!gems.Contains(ComboMatches[i].Gem))
+            {
+                if (i != 0)
+                    count[count.Count - 1] = counter;
+
+                gems.Add(ComboMatches[i].Gem);
+
+                if (count.Count < gems.Count)
+                    count.Add(counter);
+                else
+                    count[count.Count - 1] = counter;
+
+                counter = 0;
+                counter++;
+            }
+            else
+                counter++;
+
+            if (i == ComboMatches.Count - 1)
+                count[count.Count - 1] = counter;
+        }
+
+        int[] pointsPerGemType = new int[gems.Count];
+        int points = 0;
+        for (int i = 0; i < gems.Count; i++)
+        {
+            pointsPerGemType[i] += gems[i].BaseValue * count[i];
+
+            if (count[i] >= _numberOfGemsToMatch.Value + _multiplierThreshold.Value)
+                pointsPerGemType[i] = (int)(pointsPerGemType[i] * ComboMatches[i].Gem.Multiplier);
+
+            points += pointsPerGemType[i];
+        }     
+        return points;
     }
 
     private bool IsMatch(TileController tile)
     {
-        Matches.Clear();
-        Matches.Add(tile);
+        CurrentMatch.Clear();
+        CurrentMatch.Add(tile);
         CheckEveryNeighbourForMatch(tile);
 
-        return Matches.Count >= _numberOfGemsToMatch.Value;
+        if (CurrentMatch.Count >= _numberOfGemsToMatch.Value)
+        {
+            for (int i = 0; i < CurrentMatch.Count; i++)
+                ComboMatches.Add(CurrentMatch[i]);
+
+            return true;
+        }
+        else
+            return false;
     }
 
     private void CheckEveryNeighbourForMatch(TileController tile)
@@ -354,15 +531,18 @@ public class BoardController : MonoBehaviour
             return false;
 
         if (tile.Gem.Type != tile.NormalGemType)
+        {
+            SpecialGemMatchTile = tile;
             return false;
+        }
 
         if (tile.Gem.ID != ID)
             return false;
 
-        if (Matches.Contains(tile))
+        if (CurrentMatch.Contains(tile))
             return false;
 
-        Matches.Add(tile);
+        CurrentMatch.Add(tile);
         CheckEveryNeighbourForMatch(tile);
         return true;
     }
@@ -396,14 +576,14 @@ public class BoardController : MonoBehaviour
             else
             {
                 count++;
-                Matches.Add(tile);
+                ComboMatches.Add(tile);
                 return CheckNeighbours(tile, ref count, addNodes);
             }
         }
         else
         {
             if (addNodes)
-                Matches.Add(tile);
+                ComboMatches.Add(tile);
             count++;
             return CheckNeighbours(tile, ref count, addNodes);
         }
@@ -448,6 +628,26 @@ public class BoardController : MonoBehaviour
     {
         Vector2Int pos = tile.GetBoardPosition();
         tile.Neighbours[2] = GetBottomNeighbour(pos.x, pos.y);
+    }
+
+    private TileController GetTopLeftNeighbour(int x, int y)
+    {
+        return ((y - 1 >= 0) && (x - 1 >= 0)) ? (Tiles[y - 1, x - 1]) : null;
+    }
+
+    private TileController GetTopRightNeighbour(int x, int y)
+    {
+        return ((y - 1 >= 0) && (x + 1 < Columns)) ? (Tiles[y - 1, x + 1]) : null;
+    }
+
+    private TileController GetBottomLeftNeighbour(int x, int y)
+    {
+        return ((y + 1 < Rows) && (x - 1 >= 0)) ? (Tiles[y + 1, x - 1]) : null;
+    }
+
+    private TileController GetBottomRightNeighbour(int x, int y)
+    {
+        return ((y + 1 < Rows) && (x + 1 < Columns)) ? (Tiles[y + 1, x + 1]) : null;
     }
 
     private TileController GetTopNeighbour(int x, int y)
