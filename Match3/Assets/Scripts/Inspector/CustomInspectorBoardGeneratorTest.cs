@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(BoardGenerator))]
 public class CustomInspectorBoardGeneratorTest : Editor
 {
@@ -18,3 +19,4 @@ public class CustomInspectorBoardGeneratorTest : Editor
         }
     }
 }
+#endif
