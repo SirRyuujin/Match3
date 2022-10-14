@@ -1,2 +1,2 @@
 # Match3
-Playground for learning SO-based architecture.
+ Playground for learning SO-based architecture.
